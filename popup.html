@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skill Gap Analyzer</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      width: 380px;
+      min-height: 500px;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #333;
+    }
+    
+    .header {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 16px;
+      text-align: center;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .header h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: #2d3748;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .header h1::before {
+      content: "🎯";
+      font-size: 20px;
+    }
+    
+    .content {
+      padding: 20px;
+    }
+    
+    .status-card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .status {
+      font-weight: 500;
+      color: #4a5568;
+      margin-bottom: 12px;
+      padding: 8px 12px;
+      background: #f7fafc;
+      border-radius: 6px;
+      border-left: 4px solid #4299e1;
+    }
+    
+    .btn-primary {
+      width: 100%;
+      padding: 12px 16px;
+      background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 16px;
+    }
+    
+    .btn-primary:hover:not(:disabled) {
+      background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .btn-primary:disabled {
+      background: #a0aec0;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    .profile-section {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .profile-section h3 {
+      margin: 0 0 12px 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: #2d3748;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .profile-section h3::before {
+      content: "👤";
+      font-size: 16px;
+    }
+    
+    .profile-status {
+      margin: 0;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    
+    .profile-status.valid {
+      background: #f0fff4;
+      color: #22543d;
+      border-left: 4px solid #38a169;
+    }
+    
+    .profile-status.invalid {
+      background: #fffaf0;
+      color: #c53030;
+      border-left: 4px solid #e53e3e;
+    }
+    
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: #718096;
+    }
+    
+    .loading::before {
+      content: "";
+      width: 16px;
+      height: 16px;
+      border: 2px solid #e2e8f0;
+      border-top: 2px solid #4299e1;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .footer {
+      padding: 16px;
+      text-align: center;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .footer a {
+      color: rgba(255, 255, 255, 0.9);
+      text-decoration: none;
+    }
+    
+    .footer a:hover {
+      text-decoration: underline;
+    }
+    
+    /* Navigation Tabs */
+    .nav-tabs {
+      display: flex;
+      background: rgba(255, 255, 255, 0.95);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      margin: 0 -20px 20px -20px;
+    }
+    
+    .tab-btn {
+      flex: 1;
+      padding: 12px 16px;
+      background: none;
+      border: none;
+      font-size: 14px;
+      font-weight: 500;
+      color: #718096;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-bottom: 2px solid transparent;
+    }
+    
+    .tab-btn:hover {
+      color: #4299e1;
+      background: rgba(66, 153, 225, 0.1);
+    }
+    
+    .tab-btn.active {
+      color: #4299e1;
+      border-bottom-color: #4299e1;
+      background: rgba(66, 153, 225, 0.1);
+    }
+    
+    /* Tab Content */
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    /* Profile Management */
+    .profile-management {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .profile-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .profile-header h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: #2d3748;
+    }
+    
+    .profile-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .btn-secondary {
+      padding: 6px 12px;
+      background: #f7fafc;
+      color: #4a5568;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .btn-secondary:hover {
+      background: #edf2f7;
+      border-color: #cbd5e0;
+    }
+    
+    /* Form Styles */
+    .add-skill-section {
+      margin-bottom: 24px;
+      padding: 16px;
+      background: #f8fafc;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .add-skill-section h4 {
+      margin: 0 0 16px 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: #2d3748;
+    }
+    
+    .form-group {
+      margin-bottom: 12px;
+    }
+    
+    .form-row {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .form-row .form-group {
+      flex: 1;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #4a5568;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      font-size: 13px;
+      background: white;
+      transition: border-color 0.2s ease;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #4299e1;
+      box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+    }
+    
+    /* Skills List */
+    .skills-list-section {
+      margin-top: 20px;
+    }
+    
+    .skills-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .skills-header h4 {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: #2d3748;
+    }
+    
+    .skills-filter select {
+      padding: 4px 8px;
+      font-size: 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      background: white;
+    }
+    
+    .skills-list {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      background: white;
+    }
+    
+    .skill-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      border-bottom: 1px solid #f7fafc;
+    }
+    
+    .skill-item:last-child {
+      border-bottom: none;
+    }
+    
+    .skill-info {
+      flex: 1;
+    }
+    
+    .skill-name {
+      font-weight: 500;
+      color: #2d3748;
+      font-size: 13px;
+    }
+    
+    .skill-details {
+      font-size: 11px;
+      color: #718096;
+      margin-top: 2px;
+    }
+    
+    .skill-actions {
+      display: flex;
+      gap: 4px;
+    }
+    
+    .skill-actions button {
+      padding: 2px 6px;
+      font-size: 10px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .edit-skill-btn {
+      background: #edf2f7;
+      color: #4a5568;
+    }
+    
+    .edit-skill-btn:hover {
+      background: #e2e8f0;
+    }
+    
+    .delete-skill-btn {
+      background: #fed7d7;
+      color: #c53030;
+    }
+    
+    .delete-skill-btn:hover {
+      background: #feb2b2;
+    }
+    
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+    }
+    
+    .modal.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .modal-header h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: #2d3748;
+    }
+    
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 20px;
+      color: #718096;
+      cursor: pointer;
+      padding: 0;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal-close:hover {
+      color: #4a5568;
+    }
+    
+    .modal-body {
+      padding: 20px;
+    }
+    
+    .modal-footer {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      padding: 16px 20px;
+      border-top: 1px solid #e2e8f0;
+    }
+    
+    .import-preview {
+      margin-top: 16px;
+      padding: 12px;
+      background: #f8fafc;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .import-preview h4 {
+      margin: 0 0 8px 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: #2d3748;
+    }
+    
+    .detected-skill {
+      display: inline-block;
+      margin: 2px;
+      padding: 4px 8px;
+      background: #e6fffa;
+      color: #234e52;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      border: 1px solid #b2f5ea;
+      transition: all 0.2s ease;
+    }
+    
+    .detected-skill:hover {
+      background: #b2f5ea;
+    }
+    
+    .detected-skill.selected {
+      background: #4299e1;
+      color: white;
+      border-color: #3182ce;
+    }
+    
+    /* History Styles */
+    .history-section {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .history-section h3 {
+      margin: 0 0 16px 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: #2d3748;
+    }
+    
+    .history-list {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .history-item {
+      padding: 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .history-item:hover {
+      border-color: #4299e1;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .history-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    
+    .history-job-title {
+      font-weight: 500;
+      color: #2d3748;
+      font-size: 13px;
+    }
+    
+    .history-date {
+      font-size: 11px;
+      color: #718096;
+    }
+    
+    .history-company {
+      font-size: 12px;
+      color: #4a5568;
+      margin-bottom: 4px;
+    }
+    
+    .history-match-score {
+      font-size: 11px;
+      font-weight: 500;
+    }
+    
+    .match-score-high {
+      color: #38a169;
+    }
+    
+    .match-score-medium {
+      color: #d69e2e;
+    }
+    
+    .match-score-low {
+      color: #e53e3e;
+    }
+    
+    /* Loading States */
+    .loading-skills,
+    .loading-history {
+      text-align: center;
+      padding: 20px;
+      color: #718096;
+      font-size: 13px;
+    }
+    
+    /* History and Comparison Styles */
+    .comparison-controls {
+      margin-bottom: 16px;
+      padding: 12px;
+      background: #f0f8ff;
+      border-radius: 6px;
+      border: 1px solid #bee3f8;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    
+    .history-controls {
+      margin-bottom: 16px;
+      padding: 12px;
+      background: #f8fafc;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .history-filters {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    
+    .search-input {
+      flex: 1;
+      padding: 6px 10px;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    
+    .filter-select {
+      padding: 6px 8px;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      font-size: 12px;
+      background: white;
+    }
+    
+    .history-actions-bar {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    
+    .history-item {
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      background: white;
+      transition: all 0.2s ease;
+      padding: 12px;
+    }
+    
+    .history-item:hover {
+      border-color: #4299e1;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .history-item.selected {
+      border-color: #4299e1;
+      background: #f0f8ff;
+    }
+    
+    .history-item-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    
+    .history-selection {
+      flex-shrink: 0;
+    }
+    
+    .job-checkbox {
+      width: 16px;
+      height: 16px;
+    }
+    
+    .history-job-info {
+      flex: 1;
+    }
+    
+    .history-job-title {
+      font-weight: 500;
+      color: #2d3748;
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
+    
+    .history-date {
+      font-size: 11px;
+      color: #718096;
+    }
+    
+    .history-match-score {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+    
+    .history-company {
+      font-size: 12px;
+      color: #4a5568;
+      margin-bottom: 6px;
+    }
+    
+    .history-skills {
+      font-size: 11px;
+      color: #718096;
+      margin-bottom: 8px;
+    }
+    
+    .history-actions {
+      display: flex;
+      gap: 6px;
+    }
+    
+    .history-actions .btn-secondary {
+      font-size: 10px;
+      padding: 4px 8px;
+    }
+    
+    /* Job Details Modal */
+    .job-details {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    
+    .job-header {
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .job-header h4 {
+      margin: 0 0 4px 0;
+      color: #2d3748;
+    }
+    
+    .job-company {
+      margin: 0 0 2px 0;
+      font-weight: 500;
+      color: #4a5568;
+    }
+    
+    .job-location {
+      margin: 0 0 8px 0;
+      font-size: 12px;
+      color: #718096;
+    }
+    
+    .job-match-score {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .job-analysis-section {
+      margin-bottom: 20px;
+    }
+    
+    .job-analysis-section h5 {
+      margin: 0 0 8px 0;
+      font-size: 14px;
+      color: #2d3748;
+    }
+    
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 6px;
+    }
+    
+    .skill-match-item,
+    .missing-skill-item,
+    .common-skill-item,
+    .unique-skill-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 8px;
+      background: #f8fafc;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+    
+    .skill-name {
+      font-weight: 500;
+      color: #2d3748;
+    }
+    
+    .match-score,
+    .skill-confidence {
+      color: #38a169;
+      font-weight: 500;
+    }
+    
+    .skill-importance,
+    .skill-type {
+      color: #d69e2e;
+      font-weight: 500;
+    }
+    
+    .recommendations-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    
+    .recommendation-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px;
+      background: #f8fafc;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+    
+    .rec-skill {
+      font-weight: 500;
+      color: #2d3748;
+    }
+    
+    .rec-priority {
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-weight: 500;
+      font-size: 10px;
+    }
+    
+    .priority-high {
+      background: #fed7d7;
+      color: #c53030;
+    }
+    
+    .priority-medium {
+      background: #feebc8;
+      color: #d69e2e;
+    }
+    
+    .priority-low {
+      background: #e6fffa;
+      color: #38a169;
+    }
+    
+    .rec-time {
+      color: #718096;
+    }
+    
+    /* Job Comparison Styles */
+    .job-comparison {
+      max-height: 500px;
+      overflow-y: auto;
+    }
+    
+    .comparison-overview {
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .jobs-overview {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+    
+    .job-overview-item {
+      padding: 8px;
+      background: #f8fafc;
+      border-radius: 4px;
+      text-align: center;
+    }
+    
+    .job-title {
+      font-weight: 500;
+      font-size: 12px;
+      color: #2d3748;
+      margin-bottom: 2px;
+    }
+    
+    .job-company {
+      font-size: 11px;
+      color: #4a5568;
+      margin-bottom: 4px;
+    }
+    
+    .job-match {
+      font-size: 10px;
+      font-weight: 500;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+    
+    .comparison-section {
+      margin-bottom: 20px;
+    }
+    
+    .comparison-section h5 {
+      margin: 0 0 8px 0;
+      font-size: 14px;
+      color: #2d3748;
+    }
+    
+    .unique-skills-section {
+      margin-bottom: 12px;
+    }
+    
+    .unique-skills-section h6 {
+      margin: 0 0 6px 0;
+      font-size: 12px;
+      color: #4a5568;
+    }
+    
+    .trends-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    
+    .trend-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 8px;
+      background: #f8fafc;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+    
+    .trend-skill {
+      font-weight: 500;
+      color: #2d3748;
+    }
+    
+    .trend-frequency,
+    .trend-importance {
+      color: #718096;
+    }
+    
+    /* Skill Trends Styles */
+    .skill-trends {
+      max-height: 500px;
+      overflow-y: auto;
+    }
+    
+    .trends-header {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    
+    .trends-header h4 {
+      margin: 0 0 4px 0;
+      color: #2d3748;
+    }
+    
+    .trends-header p {
+      margin: 0;
+      font-size: 12px;
+      color: #718096;
+    }
+    
+    .trend-item-detailed {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px;
+      background: #f8fafc;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
+    
+    .trend-rank {
+      font-weight: 600;
+      color: #4299e1;
+      font-size: 14px;
+      min-width: 24px;
+    }
+    
+    .trend-info {
+      flex: 1;
+    }
+    
+    .trend-skill-name {
+      font-weight: 500;
+      color: #2d3748;
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
+    
+    .trend-stats {
+      display: flex;
+      gap: 12px;
+      font-size: 11px;
+      color: #718096;
+    }
+    
+    .trend-bar {
+      width: 60px;
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    
+    .trend-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4299e1, #3182ce);
+      transition: width 0.3s ease;
+    }
+    
+    .trends-insights {
+      margin-top: 20px;
+      padding: 12px;
+      background: #f0f8ff;
+      border-radius: 6px;
+      border-left: 4px solid #4299e1;
+    }
+    
+    .trends-insights h5 {
+      margin: 0 0 8px 0;
+      font-size: 13px;
+      color: #2d3748;
+    }
+    
+    .trends-insights ul {
+      margin: 0;
+      padding-left: 16px;
+      font-size: 11px;
+      color: #4a5568;
+    }
+    
+    .trends-insights li {
+      margin-bottom: 4px;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 400px) {
+      body {
+        width: 320px;
+      }
+      
+      .form-row {
+        flex-direction: column;
+        gap: 8px;
+      }
+      
+      .modal-content {
+        width: 95%;
+        margin: 10px;
+      }
+      
+      .history-filters {
+        flex-direction: column;
+        gap: 6px;
+      }
+      
+      .jobs-overview {
+        grid-template-columns: 1fr;
+      }
+      
+      .skills-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Skill Gap Analyzer</h1>
+  </div>
+  
+  <div class="content">
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs">
+      <button class="tab-btn active" data-tab="analysis">Analysis</button>
+      <button class="tab-btn" data-tab="profile">Profile</button>
+      <button class="tab-btn" data-tab="history">History</button>
+    </div>
+
+    <!-- Analysis Tab -->
+    <div id="analysis-tab" class="tab-content active">
+      <div class="status-card">
+        <div class="status loading">Initializing...</div>
+        <button id="analyze-btn" class="btn-primary" disabled>
+          Analyze Current Job
+        </button>
+      </div>
+      
+      <div class="profile-section">
+        <h3>Profile Status</h3>
+        <p class="profile-status loading">Loading profile...</p>
+      </div>
+    </div>
+
+    <!-- Profile Management Tab -->
+    <div id="profile-tab" class="tab-content">
+      <div class="profile-management">
+        <div class="profile-header">
+          <h3>Skill Profile</h3>
+          <div class="profile-actions">
+            <button id="import-btn" class="btn-secondary">Import</button>
+            <button id="export-btn" class="btn-secondary">Export</button>
+          </div>
+        </div>
+
+        <!-- Add Skill Form -->
+        <div class="add-skill-section">
+          <h4>Add New Skill</h4>
+          <form id="add-skill-form">
+            <div class="form-group">
+              <label for="skill-name">Skill Name</label>
+              <input type="text" id="skill-name" placeholder="e.g., JavaScript, Project Management" required>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="skill-category">Category</label>
+                <select id="skill-category" required>
+                  <option value="">Select category</option>
+                  <option value="technical">Technical</option>
+                  <option value="soft_skills">Soft Skills</option>
+                  <option value="tools">Tools</option>
+                  <option value="frameworks">Frameworks</option>
+                  <option value="languages">Languages</option>
+                  <option value="certifications">Certifications</option>
+                  <option value="methodologies">Methodologies</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="skill-proficiency">Proficiency</label>
+                <select id="skill-proficiency" required>
+                  <option value="">Select level</option>
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                  <option value="expert">Expert</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="skill-experience">Years of Experience (optional)</label>
+              <input type="number" id="skill-experience" min="0" max="50" step="0.5">
+            </div>
+            <button type="submit" class="btn-primary">Add Skill</button>
+          </form>
+        </div>
+
+        <!-- Skills List -->
+        <div class="skills-list-section">
+          <div class="skills-header">
+            <h4>Your Skills</h4>
+            <div class="skills-filter">
+              <select id="category-filter">
+                <option value="">All Categories</option>
+                <option value="technical">Technical</option>
+                <option value="soft_skills">Soft Skills</option>
+                <option value="tools">Tools</option>
+                <option value="frameworks">Frameworks</option>
+                <option value="languages">Languages</option>
+                <option value="certifications">Certifications</option>
+                <option value="methodologies">Methodologies</option>
+              </select>
+            </div>
+          </div>
+          <div id="skills-list" class="skills-list">
+            <div class="loading-skills">Loading skills...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- History Tab -->
+    <div id="history-tab" class="tab-content">
+      <div class="history-section">
+        <h3>Analysis History</h3>
+        <div id="history-list" class="history-list">
+          <div class="loading-history">Loading history...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div id="import-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Import Skills from Resume</h3>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="resume-text">Paste your resume text below:</label>
+            <textarea id="resume-text" placeholder="Paste your resume content here..." rows="8"></textarea>
+          </div>
+          <div class="import-preview" id="import-preview" style="display: none;">
+            <h4>Detected Skills:</h4>
+            <div id="detected-skills"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="analyze-resume-btn" class="btn-secondary">Analyze Text</button>
+          <button id="import-skills-btn" class="btn-primary" style="display: none;">Import Selected Skills</button>
+          <button class="modal-close btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="footer">
+    <p>Privacy-first skill analysis</p>
+  </div>
+  
+  <script src="dist/popup.js"></script>
+</body>
+</html>
